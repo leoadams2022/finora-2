@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@layer utilities {
+  .required-asterisk {
+    @apply relative after:absolute after:-top-1 after:content-['*'] after:ml-1 after:text-base after:text-rose-500;
+  }
+}

@@ -1,0 +1,79 @@
+src/
+├── components/
+│ ├── ui/ # Reusable core UI components (buttons, modals, inputs)
+│ │ ├── MoneyDisplay.jsx
+│ │ ├── CurrencyInput.jsx
+│ │ ├── ConfirmDialog.jsx
+│ │ ├── EmptyState.jsx
+│ │ ├── LoadingState.jsx
+│ │ └── DataTable.jsx
+│ ├── layout/ # Main layout shell, sidebar navigation, and header
+│ │ ├── Sidebar.jsx
+│ │ ├── Header.jsx
+│ │ └── AppLayout.jsx
+│ ├── accounts/ # Account management modals & cards
+│ ├── transactions/ # Dynamic transaction forms & tables
+│ ├── budgets/ # Budget tracking cards & progress bars
+│ ├── debts/ # Debt tracking & payment modals
+│ └── reports/ # Visual report wrapper cards
+│
+├── pages/ # Primary application routes
+│ ├── Dashboard.jsx
+│ ├── Accounts.jsx
+│ ├── Transactions.jsx
+│ ├── Transfers.jsx
+│ ├── Budgets.jsx
+│ ├── RecurringTransactions.jsx
+│ ├── Debts.jsx
+│ ├── PeopleEntities.jsx
+│ ├── NetWorth.jsx
+│ ├── Reports.jsx
+│ ├── Search.jsx
+│ ├── Categories.jsx
+│ ├── Tags.jsx
+│ └── Settings.jsx
+│
+├── db/ # DexieJS / IndexedDB configuration & storage layer
+│ ├── database.js # Central Dexie instance initialization
+│ ├── schema.js # Table schemas and index definitions
+│ └── migrations.js # Safe Dexie schema migration handlers
+│
+├── finance/ # Domain Layer (Pure financial calculations & logic)
+│ ├── money.js # Decimal-safe arithmetic helpers
+│ ├── ledger.js # Multi-effect ledger logic
+│ ├── balances.js # Account balance derivations
+│ ├── conversions.js # Historical & current rate calculations
+│ ├── fees.js # Payment and transfer fee engines
+│ ├── debts.js # Debt status & liability logic
+│ └── netWorth.js # Asset vs. liability aggregate logic
+│
+├── services/ # Application Services (Data access & transactions)
+│ ├── accountService.js
+│ ├── transactionService.js
+│ ├── transferService.js
+│ ├── budgetService.js
+│ ├── debtService.js
+│ ├── currencyService.js
+│ └── recurringService.js
+│
+├── hooks/ # Custom React Hooks (Live Dexie queries & state)
+│ ├── useAccounts.js
+│ ├── useTransactions.js
+│ ├── useBudgets.js
+│ └── useCurrencies.js
+│
+├── utils/ # General helpers (Date handling, formatting, rules validation)
+│ ├── dates.js
+│ ├── formatting.js
+│ └── validation.js
+│
+├── constants/ # Static options, enums, default categories, and types
+│ ├── transactionTypes.js
+│ ├── accountTypes.js
+│ └── currencies.js
+│
+├── routes/ # React Router route definitions
+│ └── AppRoutes.jsx
+│
+├── App.jsx # Main application entry component
+└── main.jsx # Vite entry point
