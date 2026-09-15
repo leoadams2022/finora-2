@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { Plus } from "lucide-react";
 import QuickActionModal from "../common/QuickActionModal";
+import MobileNavbar from "./MobileNavbar";
 
 /**
  * Main Application Layout Shell
@@ -39,10 +40,13 @@ const AppLayout = () => {
 
         {/* Dynamic Page Viewport */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-7xl ">
             <Outlet />
           </div>
         </main>
+
+        <MobileNavbar openQuickAction={() => setIsQuickActionOpen(true)} />
+
         {/* Global Floating Action Button (FAB) */}
         {/* <button
           onClick={() => setIsQuickActionOpen(true)}

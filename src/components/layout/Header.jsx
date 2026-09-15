@@ -49,7 +49,7 @@ const Header = ({ onMenuToggle, openQuickAction }) => {
         <button
           onClick={openQuickAction}
           title="Add Transaction, Transfer, or Debt"
-          className=" flex size-10 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:focus:ring-emerald-800 transition-all transform hover:scale-105"
+          className="hidden lg:flex size-10 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-300 dark:focus:ring-emerald-800 transition-all transform hover:scale-105"
         >
           <Plus className="h-7 w-7" />
         </button>
