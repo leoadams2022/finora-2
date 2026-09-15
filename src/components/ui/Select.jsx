@@ -150,11 +150,11 @@ export const Select = ({
   }, []);
 
   // Focus search input when dropdown opens
-  useEffect(() => {
-    if (isOpen && searchable && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isOpen, searchable]);
+  // useEffect(() => {
+  //   if (isOpen && searchable && searchInputRef.current) {
+  //     searchInputRef.current.focus();
+  //   }
+  // }, [isOpen, searchable]);
 
   const filteredOptions = searchable
     ? parsedOptions.filter((opt) =>
