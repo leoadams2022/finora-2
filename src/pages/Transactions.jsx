@@ -43,7 +43,7 @@ export const Transactions = () => {
   );
 
   // Filter State
-  const [datePreset, setDatePreset] = useState("all");
+  const [datePreset, setDatePreset] = useState("this_month");
   const [filters, setFilters] = useState({
     accountId: "",
     type: "",
@@ -255,7 +255,7 @@ export const Transactions = () => {
   };
 
   const resetFilters = () => {
-    setDatePreset("all");
+    setDatePreset("this_month");
     setFilters({
       accountId: "",
       type: "",

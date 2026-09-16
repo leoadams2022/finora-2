@@ -201,10 +201,16 @@ const Home = () => {
           <Wallet className="h-4 w-4 text-emerald-600 shrink-0" />
           <span>Active Accounts</span>
         </h2>
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 pt-1 touch-pan-x scrollbar-thin">
+
+        {/* Horizontal scroll wrapper supporting dual-axis touch gestures */}
+        <div
+          style={{ touchAction: "pan-x pan-y" }}
+          className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 pt-1 touch-pan-x overscroll-x-contain scrollbar-thin"
+        >
           {accountCards.map((acc) => (
             <div
               key={acc.id}
+              style={{ touchAction: "pan-x pan-y" }}
               className="min-w-65 sm:min-w-64 max-w-xs shrink-0 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between space-y-3"
             >
               <div className="flex items-center justify-between">
@@ -307,7 +313,10 @@ const Home = () => {
           <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
           <span>Active Debts & Liabilities</span>
         </h2>
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 pt-1 touch-pan-x scrollbar-thin">
+        <div
+          style={{ touchAction: "pan-x pan-y" }}
+          className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 pt-1 touch-pan-x overscroll-x-contain scrollbar-thin"
+        >
           {activeDebts.length === 0 ? (
             <p className="text-xs text-slate-400 italic p-2">
               No active debts found.
@@ -320,6 +329,7 @@ const Home = () => {
               return (
                 <div
                   key={debt.id}
+                  style={{ touchAction: "pan-x pan-y" }}
                   className="min-w-67.5 sm:min-w-72 max-w-sm shrink-0"
                 >
                   <DebtCard
@@ -415,7 +425,10 @@ const Home = () => {
           <PiggyBank className="h-4 w-4 text-emerald-600 shrink-0" />
           <span>Active Budgets</span>
         </h2>
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 pt-1 touch-pan-x scrollbar-thin">
+        <div
+          style={{ touchAction: "pan-x pan-y" }}
+          className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 pt-1 touch-pan-x overscroll-x-contain scrollbar-thin"
+        >
           {budgets.length === 0 ? (
             <p className="text-xs text-slate-400 italic p-2">
               No active budgets configured.
@@ -428,6 +441,7 @@ const Home = () => {
               return (
                 <div
                   key={budget.id}
+                  style={{ touchAction: "pan-x pan-y" }}
                   className="min-w-67.5 sm:min-w-72 max-w-sm shrink-0"
                 >
                   <BudgetCard

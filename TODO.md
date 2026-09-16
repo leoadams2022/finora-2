@@ -1,7 +1,6 @@
 # TODO:
 
 - [ ] we need to add Pagination to the lists on transactions transfers debts audit log and other lists
-- [ ] we need to make the user able to set the select element with search if he wents the search bar to be focusd on open or not (we can use local storage)
 
 # DONE:
 
@@ -26,5 +25,3 @@
 - [x] on the transfers page we need to sort by created at by default
 - [x] we need to add the option in the settings to reset all data
 - [x] we need to make the settings page has a list of links to (People & Entities Categories & Subcategories Tags and currency ) on click it will load the page in full screen with a go back button at the top
-
-## for the Mobile UI Optimization we got to DebtPaymentModal
