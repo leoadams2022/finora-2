@@ -88,6 +88,11 @@ const PeopleEntities = () => {
       {/* Creation Form */}
       <form
         onSubmit={handleCreate}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
         className="flex flex-col sm:flex-row max-w-lg gap-2.5 sm:gap-3 items-stretch sm:items-end"
       >
         <div className="flex-1">

@@ -96,6 +96,11 @@ const AccountForm = ({ accountToEdit, onSave, onClose }) => {
   return (
     <form
       onSubmit={handleSubmit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+        }
+      }}
       className="mt-3 sm:mt-4 space-y-3.5 sm:space-y-4"
     >
       {errors.submit && (
@@ -268,7 +273,7 @@ const AccountForm = ({ accountToEdit, onSave, onClose }) => {
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
-          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none"
         />
       </div>
 

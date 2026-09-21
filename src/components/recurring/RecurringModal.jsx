@@ -105,6 +105,11 @@ const RecurringModal = ({ isOpen, onClose, ruleToEdit = null }) => {
 
         <form
           onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
           className="mt-3 sm:mt-4 space-y-3.5 sm:space-y-4"
         >
           {error && (
@@ -333,7 +338,7 @@ const RecurringModal = ({ isOpen, onClose, ruleToEdit = null }) => {
                       setFormData({ ...formData, notes: e.target.value })
                     }
                     placeholder="e.g. Contract details, customer support numbers"
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white outline-none transition"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white outline-none transition resize-none"
                   />
                 </div>
               </div>

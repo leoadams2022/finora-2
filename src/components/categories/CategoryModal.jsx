@@ -41,6 +41,11 @@ const CategoryForm = ({ categoryToEdit, onSave, onClose }) => {
   return (
     <form
       onSubmit={handleSubmit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+        }
+      }}
       className="mt-3 sm:mt-4 space-y-3.5 sm:space-y-4"
     >
       {error && (

@@ -30,6 +30,8 @@ export const TransactionCard = ({
   viewOnly = false,
 }) => {
   const isExpense = tx.type === "expense";
+  const isTransfer = tx.isTransferTransaction || tx.type === "transfer";
+  const isCrossCurrency = isTransfer && tx.currency !== tx.destinationCurrency;
 
   let badgeLabel = tx.type;
   let badgeClass = isExpense
@@ -38,7 +40,7 @@ export const TransactionCard = ({
       ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
       : "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400";
 
-  if (tx.isTransferTransaction) {
+  if (isTransfer) {
     badgeLabel = "Transfer";
     badgeClass =
       "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400";
@@ -75,19 +77,21 @@ export const TransactionCard = ({
         {/* Title & Amount */}
         <div className="mt-2 flex items-baseline justify-between gap-2">
           <h3 className="font-semibold text-sm sm:text-base text-slate-900 dark:text-white truncate min-w-0 flex-1">
-            {tx.description || category?.name || "Transaction"}
+            {tx.description ||
+              category?.name ||
+              (isTransfer ? "Account Transfer" : "Transaction")}
           </h3>
           <div className="text-right shrink-0">
             <MoneyDisplay
               amount={isExpense ? -tx.totalImpact : tx.amount}
               currency={tx.currency}
-              colorize={!tx.isTransferTransaction}
-              className="text-sm sm:text-base font-bold"
+              colorize={!isTransfer}
+              className="text-sm sm:text-base font-bold text-slate-900 dark:text-white"
             />
-            {tx.isTransferTransaction && (
-              <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+            {isTransfer && (
+              <>
                 {tx.feeAmount > 0 && (
-                  <div>
+                  <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
                     Fee:{" "}
                     <MoneyDisplay
                       amount={tx.feeAmount}
@@ -96,15 +100,30 @@ export const TransactionCard = ({
                     />
                   </div>
                 )}
-                {tx.currency !== tx.destinationCurrency && (
-                  <div>
-                    Rate: 1 {getCurrency(tx.currency)?.symbol || tx.currency} ={" "}
-                    {tx.exchangeRate}{" "}
-                    {getCurrency(tx.destinationCurrency)?.symbol ||
-                      tx.destinationCurrency}
+                {isCrossCurrency && (
+                  <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400 space-y-0.5">
+                    <div>
+                      Received:{" "}
+                      <MoneyDisplay
+                        amount={tx.destinationAmount}
+                        currency={tx.destinationCurrency}
+                        className="text-emerald-600 dark:text-emerald-400 font-medium"
+                      />
+                    </div>
+                    <div>
+                      Rate: 1{" "}
+                      {getCurrency
+                        ? getCurrency(tx.currency)?.symbol || tx.currency
+                        : tx.currency}{" "}
+                      = {tx.exchangeRate}{" "}
+                      {getCurrency
+                        ? getCurrency(tx.destinationCurrency)?.symbol ||
+                          tx.destinationCurrency
+                        : tx.destinationCurrency}
+                    </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
             {tx.isDebtTransaction && (
               <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400 space-y-0.5">
@@ -120,9 +139,14 @@ export const TransactionCard = ({
                     </div>
                     <div>
                       Rate: 1{" "}
-                      {getCurrency(tx.debtCurrency)?.symbol || tx.debtCurrency}{" "}
+                      {getCurrency
+                        ? getCurrency(tx.debtCurrency)?.symbol ||
+                          tx.debtCurrency
+                        : tx.debtCurrency}{" "}
                       = {tx.exchangeRate}{" "}
-                      {getCurrency(tx.currency)?.symbol || tx.currency}
+                      {getCurrency
+                        ? getCurrency(tx.currency)?.symbol || tx.currency
+                        : tx.currency}
                     </div>
                   </>
                 )}
@@ -135,7 +159,7 @@ export const TransactionCard = ({
         <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-slate-500 dark:text-slate-400">
           <span className="flex items-center space-x-1 min-w-0 truncate">
             <Wallet className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            {tx.isTransferTransaction ? (
+            {isTransfer ? (
               <span className="flex items-center space-x-1 truncate">
                 <span className="truncate">
                   {accounts.find((a) => a.id === tx.accountId)?.name ||
@@ -172,7 +196,7 @@ export const TransactionCard = ({
         <div className="flex items-center space-x-1 shrink-0">
           <button
             type="button"
-            onClick={() => onView(tx)}
+            onClick={() => onView && onView(tx)}
             className="rounded-lg p-2 sm:p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 active:bg-slate-100 dark:active:bg-slate-700 transition touch-manipulation min-w-9 min-h-9 sm:min-w-0 sm:min-h-0 flex items-center justify-center"
             title="View Details"
             aria-label="View Details"
@@ -183,7 +207,7 @@ export const TransactionCard = ({
             <>
               <button
                 type="button"
-                onClick={() => onEdit(tx)}
+                onClick={() => onEdit && onEdit(tx)}
                 className="rounded-lg p-2 sm:p-1 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 active:bg-slate-100 dark:active:bg-slate-700 transition touch-manipulation min-w-9 min-h-9 sm:min-w-0 sm:min-h-0 flex items-center justify-center"
                 title="Edit Record"
                 aria-label="Edit Record"
@@ -192,7 +216,7 @@ export const TransactionCard = ({
               </button>
               <button
                 type="button"
-                onClick={() => onDelete(tx)}
+                onClick={() => onDelete && onDelete(tx)}
                 className="rounded-lg p-2 sm:p-1 text-slate-400 hover:text-rose-500 active:bg-slate-100 dark:active:bg-slate-700 transition touch-manipulation min-w-9 min-h-9 sm:min-w-0 sm:min-h-0 flex items-center justify-center"
                 title="Delete Record"
                 aria-label="Delete Record"

@@ -205,7 +205,15 @@ export const DebtForm = ({ onSave, onClose, debtToEdit = null }) => {
   if (currenciesisLoading) return <LoadingState message="Loading form..." />;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+        }
+      }}
+      className="space-y-3.5 sm:space-y-4"
+    >
       {error && (
         <div className="rounded-lg bg-rose-50 p-2.5 sm:p-3 text-xs sm:text-sm text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
           {error}
@@ -371,7 +379,7 @@ export const DebtForm = ({ onSave, onClose, debtToEdit = null }) => {
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="e.g. Cross-currency loan details"
-          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white outline-none transition"
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white outline-none transition resize-none"
         />
       </div>
 

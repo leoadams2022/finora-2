@@ -112,6 +112,13 @@ export default function TransactionForm({
     setNewAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Prevent form submission on Enter key down for input/select elements
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -136,6 +143,7 @@ export default function TransactionForm({
   return (
     <form
       onSubmit={handleSubmit}
+      onKeyDown={handleKeyDown}
       className="mt-3 sm:mt-4 space-y-3.5 sm:space-y-4"
     >
       {error && (
@@ -277,15 +285,15 @@ export default function TransactionForm({
         <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
           Description
         </label>
-        <input
+        <textarea
           type="text"
           value={formData.description}
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
           placeholder="e.g. Grocery shopping at Walmart"
-          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition min-h-10.5"
-        />
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition min-h-10.5 resize-none"
+        ></textarea>
       </div>
 
       {/* Accordion Section for Date, Fees & Attachments */}

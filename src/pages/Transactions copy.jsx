@@ -33,7 +33,6 @@ import { useToast } from "../hooks/useToast";
 import { getPresetDateRange } from "../utils/dates";
 import { useCurrencies } from "../hooks/useCurrencies";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import DebtPaymentModal from "../components/debts/DebtPaymentModal";
 
 export const Transactions = () => {
   // UI Controls State
@@ -77,8 +76,6 @@ export const Transactions = () => {
   const [debtToView, setDebtToView] = useState(null);
   const [debtToEdit, setDebtToEdit] = useState(null);
   const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
-  // debt pay modal
-  const [debtForPayment, setDebtForPayment] = useState(null);
 
   // Delete State
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -209,17 +206,6 @@ export const Transactions = () => {
       setDebtToEdit(null);
     } catch (err) {
       showError(err.message || "Failed to update debt.");
-      throw err;
-    }
-  };
-
-  // debt payment
-  const handleRecordPayment = async (formData) => {
-    try {
-      await debtService.recordDebtPayment(formData);
-      showSuccess("Debt payment recorded.");
-    } catch (err) {
-      showError(err.message || "Failed to record payment.");
       throw err;
     }
   };
@@ -391,7 +377,6 @@ export const Transactions = () => {
           onView={handleViewDetails}
           onEdit={handleOpenEdit}
           onDelete={setItemToDelete}
-          onPay={setDebtForPayment}
         />
       ) : (
         <TransactionTable
@@ -454,13 +439,6 @@ export const Transactions = () => {
         }}
         onSave={handleSaveDebt}
         debtToEdit={debtToEdit}
-      />
-      {/* Debt Pay Modal  */}
-      <DebtPaymentModal
-        isOpen={!!debtForPayment}
-        onClose={() => setDebtForPayment(null)}
-        debt={debtForPayment}
-        onSave={handleRecordPayment}
       />
 
       <DebtDetailsModal
