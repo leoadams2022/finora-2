@@ -23,9 +23,10 @@ import TransferModal from "../components/transfers/TransferModal";
 import TransferDetailsModal from "../components/transfers/TransferDetailsModal";
 import DebtModal from "../components/debts/DebtModal";
 import DebtDetailsModal from "../components/debts/DebtDetailsModal";
+import DebtPaymentModal from "../components/debts/DebtPaymentModal";
 import TransactionFilters from "../components/transactions/TransactionFilters";
 import TransactionTable from "../components/transactions/TransactionTable";
-import TransactionCardGrid from "../components/transactions/TransactionCardGrid";
+import TransactionsCardsGrid from "../components/transactions/TransactionsCardsGrid";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
@@ -33,7 +34,6 @@ import { useToast } from "../hooks/useToast";
 import { getPresetDateRange } from "../utils/dates";
 import { useCurrencies } from "../hooks/useCurrencies";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import DebtPaymentModal from "../components/debts/DebtPaymentModal";
 
 export const Transactions = () => {
   // UI Controls State
@@ -63,24 +63,20 @@ export const Transactions = () => {
     direction: "desc",
   });
 
-  // Transaction Modals
+  // Add/Edit/View Modals for Table View & Header "Add Transaction" CTA
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState(null);
   const [selectedTxForView, setSelectedTxForView] = useState(null);
 
-  // Transfer Modals
   const [transferToView, setTransferToView] = useState(null);
   const [transferToEdit, setTransferToEdit] = useState(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
-  // Debt Modals
   const [debtToView, setDebtToView] = useState(null);
   const [debtToEdit, setDebtToEdit] = useState(null);
   const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
-  // debt pay modal
   const [debtForPayment, setDebtForPayment] = useState(null);
 
-  // Delete State
   const [itemToDelete, setItemToDelete] = useState(null);
 
   const { transactions, isLoading } = useTransactions(filters, sortConfig);
@@ -113,7 +109,7 @@ export const Transactions = () => {
     setIsModalOpen(true);
   };
 
-  // Action Dispatcher for Viewing Details based on Type
+  // Dispatchers for Table View Interactions
   const handleViewDetails = async (tx) => {
     if (tx.isTransferTransaction) {
       setTransferToView(tx);
@@ -125,7 +121,6 @@ export const Transactions = () => {
     }
   };
 
-  // Action Dispatcher for Editing based on Type
   const handleOpenEdit = async (tx) => {
     if (tx.isTransferTransaction) {
       setTransferToEdit(tx);
@@ -142,7 +137,7 @@ export const Transactions = () => {
     }
   };
 
-  // Save Transaction
+  // Save Handlers for Table Modals
   const handleSaveTransaction = async (
     formData,
     newAttachments = [],
@@ -169,7 +164,6 @@ export const Transactions = () => {
     }
   };
 
-  // Save Transfer
   const handleSaveTransfer = async (
     formData,
     newAttachments = [],
@@ -191,7 +185,6 @@ export const Transactions = () => {
     }
   };
 
-  // Save Debt
   const handleSaveDebt = async (
     formData,
     newAttachments = [],
@@ -213,7 +206,6 @@ export const Transactions = () => {
     }
   };
 
-  // debt payment
   const handleRecordPayment = async (formData) => {
     try {
       await debtService.recordDebtPayment(formData);
@@ -224,7 +216,6 @@ export const Transactions = () => {
     }
   };
 
-  // Action Dispatcher for Deleting based on Type
   const handleDeleteItem = async () => {
     if (!itemToDelete) return;
     try {
@@ -311,7 +302,6 @@ export const Transactions = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {/* Toggle Filters Button */}
           <button
             type="button"
             onClick={() => setShowFilters((prev) => !prev)}
@@ -325,7 +315,6 @@ export const Transactions = () => {
             <span>{showFilters ? "Hide Filters" : "Filters"}</span>
           </button>
 
-          {/* Compact View Switcher */}
           <button
             type="button"
             onClick={() => setIsCompactView((prev) => !prev)}
@@ -344,7 +333,6 @@ export const Transactions = () => {
             <span>{isCompactView ? "Full Table" : "Compact View"}</span>
           </button>
 
-          {/* Add Transaction Primary CTA */}
           <button
             type="button"
             onClick={handleOpenAdd}
@@ -356,7 +344,6 @@ export const Transactions = () => {
         </div>
       </div>
 
-      {/* Toggleable Filter Bar Component */}
       {showFilters && (
         <TransactionFilters
           filters={filters}
@@ -371,7 +358,7 @@ export const Transactions = () => {
         />
       )}
 
-      {/* Main Content Area: Table View vs Compact Card View */}
+      {/* Main Content Area */}
       {transactions.length === 0 ? (
         <EmptyState
           icon={ArrowRightLeft}
@@ -381,18 +368,8 @@ export const Transactions = () => {
           onAction={handleOpenAdd}
         />
       ) : isCompactView ? (
-        <TransactionCardGrid
-          transactions={transactions}
-          accounts={accounts}
-          categories={categories}
-          subcategories={subcategories}
-          attachmentCounts={attachmentCounts}
-          getCurrency={getCurrency}
-          onView={handleViewDetails}
-          onEdit={handleOpenEdit}
-          onDelete={setItemToDelete}
-          onPay={setDebtForPayment}
-        />
+        /* Replaced TransactionCardGrid with TransactionsCardsGrid */
+        <TransactionsCardsGrid transactions={transactions} />
       ) : (
         <TransactionTable
           transactions={transactions}
@@ -408,7 +385,7 @@ export const Transactions = () => {
         />
       )}
 
-      {/* Transaction Modals */}
+      {/* Top-Level Add Modals & Table View Modals */}
       <TransactionModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -428,7 +405,6 @@ export const Transactions = () => {
         subcategory={activeSubcategory}
       />
 
-      {/* Transfer Modals */}
       <TransferModal
         isOpen={isTransferModalOpen}
         onClose={() => {
@@ -445,7 +421,6 @@ export const Transactions = () => {
         transfer={transferToView}
       />
 
-      {/* Debt Modals */}
       <DebtModal
         isOpen={isDebtModalOpen}
         onClose={() => {
@@ -455,7 +430,7 @@ export const Transactions = () => {
         onSave={handleSaveDebt}
         debtToEdit={debtToEdit}
       />
-      {/* Debt Pay Modal  */}
+
       <DebtPaymentModal
         isOpen={!!debtForPayment}
         onClose={() => setDebtForPayment(null)}
@@ -469,7 +444,6 @@ export const Transactions = () => {
         debt={debtToView}
       />
 
-      {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!itemToDelete}
         onClose={() => setItemToDelete(null)}

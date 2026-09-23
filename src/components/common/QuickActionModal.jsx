@@ -27,12 +27,7 @@ const QuickActionModal = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  const handleSaveTransfer = async (
-    formData,
-    newAttachments = [],
-    // eslint-disable-next-line no-unused-vars
-    attachmentsToDelete = [],
-  ) => {
+  const handleSaveTransfer = async (formData, newAttachments = []) => {
     await transferService.createTransfer(formData, newAttachments);
     showSuccess("Transfer executed successfully!");
     onClose();

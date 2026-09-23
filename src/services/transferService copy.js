@@ -51,33 +51,10 @@ export const transferService = {
     }
 
     const isCrossCurrency = sourceAcc.currency !== destAcc.currency;
-    const rawSourceAmount = Number(data.sourceAmount);
+    const numSourceAmount = Number(data.sourceAmount);
 
-    // Fee calculations
-    let feeAmount = 0;
-    if (data.hasFee) {
-      if (data.feeType === "percentage") {
-        feeAmount = money.calculatePercentageFee(rawSourceAmount, data.feeRate);
-      } else {
-        feeAmount = Number(data.feeAmount || 0);
-      }
-    }
-
-    const isFeeInclusive = data.hasFee && data.feeDeductionType === "inclusive";
-
-    if (isFeeInclusive && feeAmount >= rawSourceAmount) {
-      throw new Error(
-        "Transfer fee cannot exceed or equal the total transfer amount.",
-      );
-    }
-
-    // Effective net amount sent to destination account
-    const netSourceTransferAmount = isFeeInclusive
-      ? money.subtract(rawSourceAmount, feeAmount)
-      : rawSourceAmount;
-
+    let numDestAmount = numSourceAmount;
     let exchangeRate = 1.0;
-    let numDestAmount = netSourceTransferAmount;
 
     if (isCrossCurrency) {
       if (!data.exchangeRate || Number(data.exchangeRate) <= 0) {
@@ -88,7 +65,17 @@ export const transferService = {
       exchangeRate = Number(data.exchangeRate);
       numDestAmount = data.destinationAmount
         ? Number(data.destinationAmount)
-        : money.multiply(netSourceTransferAmount, exchangeRate);
+        : money.multiply(numSourceAmount, exchangeRate);
+    }
+
+    // Fee calculations
+    let feeAmount = 0;
+    if (data.hasFee) {
+      if (data.feeType === "percentage") {
+        feeAmount = money.calculatePercentageFee(numSourceAmount, data.feeRate);
+      } else {
+        feeAmount = Number(data.feeAmount || 0);
+      }
     }
 
     const transferId = `trf_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -111,16 +98,15 @@ export const transferService = {
           isTransferTransaction: true,
           date: data.date || now,
           time: data.time || "12:00",
-          amount: rawSourceAmount,
+          amount: numSourceAmount,
           currency: sourceAcc.currency,
-          accountId: sourceAcc.id,
-          destinationAccountId: destAcc.id,
+          accountId: sourceAcc.id, // Source account
+          destinationAccountId: destAcc.id, // Destination account
           destinationAmount: numDestAmount,
           destinationCurrency: destAcc.currency,
           exchangeRate: exchangeRate,
           feeAmount: feeAmount,
           feeCurrency: sourceAcc.currency,
-          feeDeductionType: data.feeDeductionType || "additive",
           description: data.description
             ? data.description.trim()
             : `Transfer to ${destAcc.name}`,
@@ -132,17 +118,17 @@ export const transferService = {
         };
 
         const lines = [
-          // 1. Source Account Debit (Net transferred portion)
+          // 1. Source Account Debit (Expense Line Effect)
           {
             id: `txl_${Date.now()}_src`,
             transactionId: transferId,
             accountId: sourceAcc.id,
             type: "expense",
-            amount: netSourceTransferAmount,
+            amount: numSourceAmount,
             currency: sourceAcc.currency,
             isDeleted: false,
           },
-          // 2. Destination Account Credit (Amount received after conversion/fees)
+          // 2. Destination Account Credit (Income Line Effect)
           {
             id: `txl_${Date.now()}_dest`,
             transactionId: transferId,
@@ -174,7 +160,7 @@ export const transferService = {
           entityType: "transfer",
           entityId: transferId,
           action: "CREATE",
-          details: `Transferred ${netSourceTransferAmount} ${sourceAcc.currency} to ${destAcc.name} (${numDestAmount} ${destAcc.currency}) [Fee: ${feeAmount} ${sourceAcc.currency} (${data.feeDeductionType || "additive"})]`,
+          details: `Transferred ${numSourceAmount} ${sourceAcc.currency} to ${destAcc.name} (${numDestAmount} ${destAcc.currency})`,
           timestamp: now,
         };
 
@@ -192,7 +178,7 @@ export const transferService = {
   },
 
   /**
-   * Update existing Transfer atomically.
+   * Update existing Transfer atomically with ledger line replacement and attachment management.
    */
   async updateTransfer(id, data, newRawFiles = [], attachmentsToDelete = []) {
     const existing = await db.transactions.get(id);
@@ -220,31 +206,10 @@ export const transferService = {
     }
 
     const isCrossCurrency = sourceAcc.currency !== destAcc.currency;
-    const rawSourceAmount = Number(data.sourceAmount);
+    const numSourceAmount = Number(data.sourceAmount);
 
-    let feeAmount = 0;
-    if (data.hasFee) {
-      if (data.feeType === "percentage") {
-        feeAmount = money.calculatePercentageFee(rawSourceAmount, data.feeRate);
-      } else {
-        feeAmount = Number(data.feeAmount || 0);
-      }
-    }
-
-    const isFeeInclusive = data.hasFee && data.feeDeductionType === "inclusive";
-
-    if (isFeeInclusive && feeAmount >= rawSourceAmount) {
-      throw new Error(
-        "Transfer fee cannot exceed or equal the total transfer amount.",
-      );
-    }
-
-    const netSourceTransferAmount = isFeeInclusive
-      ? money.subtract(rawSourceAmount, feeAmount)
-      : rawSourceAmount;
-
+    let numDestAmount = numSourceAmount;
     let exchangeRate = 1.0;
-    let numDestAmount = netSourceTransferAmount;
 
     if (isCrossCurrency) {
       if (!data.exchangeRate || Number(data.exchangeRate) <= 0) {
@@ -255,7 +220,16 @@ export const transferService = {
       exchangeRate = Number(data.exchangeRate);
       numDestAmount = data.destinationAmount
         ? Number(data.destinationAmount)
-        : money.multiply(netSourceTransferAmount, exchangeRate);
+        : money.multiply(numSourceAmount, exchangeRate);
+    }
+
+    let feeAmount = 0;
+    if (data.hasFee) {
+      if (data.feeType === "percentage") {
+        feeAmount = money.calculatePercentageFee(numSourceAmount, data.feeRate);
+      } else {
+        feeAmount = Number(data.feeAmount || 0);
+      }
     }
 
     const newAttachmentRecords =
@@ -271,7 +245,7 @@ export const transferService = {
           ...existing,
           date: data.date || existing.date,
           time: data.time || existing.time || "12:00",
-          amount: rawSourceAmount,
+          amount: numSourceAmount,
           currency: sourceAcc.currency,
           accountId: sourceAcc.id,
           destinationAccountId: destAcc.id,
@@ -280,7 +254,6 @@ export const transferService = {
           exchangeRate: exchangeRate,
           feeAmount: feeAmount,
           feeCurrency: sourceAcc.currency,
-          feeDeductionType: data.feeDeductionType || "additive",
           description: data.description
             ? data.description.trim()
             : `Transfer to ${destAcc.name}`,
@@ -288,6 +261,7 @@ export const transferService = {
           updatedAt: now,
         };
 
+        // Mark existing transaction lines as deleted
         const oldLines = await db.transactionLines
           .where("transactionId")
           .equals(id)
@@ -296,13 +270,14 @@ export const transferService = {
           await db.transactionLines.update(line.id, { isDeleted: true });
         }
 
+        // Create new ledger lines
         const newLines = [
           {
             id: `txl_${Date.now()}_src`,
             transactionId: id,
             accountId: sourceAcc.id,
             type: "expense",
-            amount: netSourceTransferAmount,
+            amount: numSourceAmount,
             currency: sourceAcc.currency,
             isDeleted: false,
           },
@@ -331,6 +306,7 @@ export const transferService = {
           });
         }
 
+        // Handle attachment additions and removals
         for (const attId of attachmentsToDelete) {
           await db.attachments.delete(attId);
         }
@@ -338,12 +314,13 @@ export const transferService = {
           await db.attachments.bulkAdd(newAttachmentRecords);
         }
 
+        // Write Audit Log
         const auditLog = {
           id: `log_${Date.now()}`,
           entityType: "transfer",
           entityId: id,
           action: "UPDATE",
-          details: `Updated transfer ${id}: ${netSourceTransferAmount} ${sourceAcc.currency} to ${destAcc.name}`,
+          details: `Updated transfer ${id}: ${numSourceAmount} ${sourceAcc.currency} to ${destAcc.name}`,
           timestamp: now,
         };
 
@@ -357,7 +334,7 @@ export const transferService = {
   },
 
   /**
-   * Delete Transfer (Soft Delete).
+   * Delete Transfer (Soft Delete) and clean up associated attachments.
    */
   async deleteTransfer(id) {
     const existing = await db.transactions.get(id);

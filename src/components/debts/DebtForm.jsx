@@ -380,7 +380,7 @@ export const DebtForm = ({ onSave, onClose, debtToEdit = null }) => {
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="e.g. Cross-currency loan details"
           className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-white outline-none transition resize-none"
-        />
+        ></textarea>
       </div>
 
       {/* Accordion Section for Dates & Attachments */}

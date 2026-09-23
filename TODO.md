@@ -1,6 +1,11 @@
 # TODO:
 
-- [ ] we need to add Pagination to the lists on transactions transfers debts audit log and other lists
+- [ ] we need to add a unversal date filter for the transaction and transfers to show them by month
+- [ ] we an Debt Payment is Received we need to show the related debt to it on the card and the deatils modal
+- [ ] we need to be able to reorder accounts Categories Subcategories Currencies and People/Entities
+- [ ] we need to NOT count transfers as income on the home page (Income This Month)
+- [ ] we need to NOT count the Loaned Out amounts as expencs on the home page
+- [ ] we need to add a section to home page to show expences/income by Categories & Subcategories and another section by tags as will
 
 # DONE:
 
@@ -25,3 +30,6 @@
 - [x] on the transfers page we need to sort by created at by default
 - [x] we need to add the option in the settings to reset all data
 - [x] we need to make the settings page has a list of links to (People & Entities Categories & Subcategories Tags and currency ) on click it will load the page in full screen with a go back button at the top
+- [x] we need to fix the latest transaction view on the home page to use the transfer and debt cards components not just the transaction card component
+- [x] we need to groub debts by person or entity
+- [x] we need to support adding transfers fees as subof the the ttl amount not just added on top on it

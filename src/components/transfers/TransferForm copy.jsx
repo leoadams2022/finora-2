@@ -20,7 +20,6 @@ const DEFAULT_FORM = {
   description: "",
   hasFee: false,
   feeType: "fixed",
-  feeDeductionType: "additive", // "additive" (Added on top) | "inclusive" (Deducted from total)
   feeAmount: "",
   feeRate: "",
 };
@@ -50,7 +49,6 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
           transferToEdit.feeAmount && transferToEdit.feeAmount > 0,
         ),
         feeType: "fixed",
-        feeDeductionType: transferToEdit.feeDeductionType || "additive",
         feeAmount: transferToEdit.feeAmount
           ? String(transferToEdit.feeAmount)
           : "",
@@ -92,28 +90,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
   const isCrossCurrency =
     sourceAcc && destAcc && sourceAcc.currency !== destAcc.currency;
 
-  // Calculate live fee & net transfer values
-  const rawSourceNum = Number(formData.sourceAmount || 0);
-  let calculatedFee = 0;
-  if (formData.hasFee) {
-    if (formData.feeType === "percentage") {
-      calculatedFee = (rawSourceNum * Number(formData.feeRate || 0)) / 100;
-    } else {
-      calculatedFee = Number(formData.feeAmount || 0);
-    }
-  }
-
-  const isFeeInclusive =
-    formData.hasFee && formData.feeDeductionType === "inclusive";
-  const netSourceTransferAmount = isFeeInclusive
-    ? Math.max(0, rawSourceNum - calculatedFee)
-    : rawSourceNum;
-
-  const totalSourceDeducted = isFeeInclusive
-    ? rawSourceNum
-    : rawSourceNum + calculatedFee;
-
-  // Calculate default triangulated exchange rate when account selections or net transfer amounts change
+  // Calculate default triangulated exchange rate when account selections change
   useEffect(() => {
     if (transferToEdit) return; // Skip automatic rate override during editing
 
@@ -124,12 +101,12 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
 
       if (sourceAcc.currency === destAcc.currency) {
         setFormData((prev) => {
+          // eslint-disable-next-line no-unused-vars
+          const numSource = Number(prev.sourceAmount || 0);
           return {
             ...prev,
             exchangeRate: "1.0",
-            destinationAmount: netSourceTransferAmount
-              ? String(netSourceTransferAmount)
-              : "",
+            destinationAmount: prev.sourceAmount,
           };
         });
         return;
@@ -146,12 +123,13 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
         const rateStr = rate ? String(Number(rate.toFixed(4))) : "1.0";
 
         setFormData((prev) => {
+          const numSource = Number(prev.sourceAmount || 0);
           const numRate = Number(rateStr);
           return {
             ...prev,
             exchangeRate: rateStr,
-            destinationAmount: netSourceTransferAmount
-              ? (netSourceTransferAmount * numRate).toFixed(2)
+            destinationAmount: numSource
+              ? (numSource * numRate).toFixed(2)
               : "",
           };
         });
@@ -170,7 +148,6 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
     formData.destinationAccountId,
     sourceAcc,
     destAcc,
-    netSourceTransferAmount,
     transferToEdit,
   ]);
 
@@ -178,23 +155,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
     setFormData((prev) => {
       const numVal = Number(val || 0);
       const rate = Number(prev.exchangeRate || 1);
-      let effectiveNet = numVal;
-
-      if (prev.hasFee && prev.feeDeductionType === "inclusive") {
-        // eslint-disable-next-line no-useless-assignment
-        let fee = 0;
-        if (prev.feeType === "percentage") {
-          fee = (numVal * Number(prev.feeRate || 0)) / 100;
-        } else {
-          fee = Number(prev.feeAmount || 0);
-        }
-        effectiveNet = Math.max(0, numVal - fee);
-      }
-
-      const calculatedDest = isCrossCurrency
-        ? (effectiveNet * rate).toFixed(2)
-        : String(effectiveNet);
-
+      const calculatedDest = isCrossCurrency ? (numVal * rate).toFixed(2) : val;
       return {
         ...prev,
         sourceAmount: val,
@@ -205,11 +166,12 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
 
   const handleRateChange = (val) => {
     setFormData((prev) => {
+      const numSource = Number(prev.sourceAmount || 0);
       const numRate = Number(val || 1);
       return {
         ...prev,
         exchangeRate: val,
-        destinationAmount: (netSourceTransferAmount * numRate).toFixed(2),
+        destinationAmount: (numSource * numRate).toFixed(2),
       };
     });
   };
@@ -381,7 +343,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
                 type="number"
                 readOnly
                 value={formData.destinationAmount}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-sm text-slate-700 dark:text-slate-300 outline-none transition min-h-10.5 font-bold"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-2.5 text-sm text-slate-700 dark:text-slate-300 outline-none transition min-h-10.5"
               />
             </div>
           </div>
@@ -423,101 +385,45 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
         </div>
 
         {formData.hasFee && (
-          <div className="space-y-3 pt-1">
-            {/* Fee Mode: Add on Top vs Deduct from Total */}
-            <div className="flex rounded-lg bg-slate-200 dark:bg-slate-800 p-1 gap-1">
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({ ...formData, feeDeductionType: "additive" })
-                }
-                className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md transition ${
-                  formData.feeDeductionType === "additive"
-                    ? "bg-white text-slate-900 dark:bg-slate-700 dark:text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
-                }`}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label className="block text-xs text-slate-500 mb-1 font-medium">
+                Fee Type
+              </label>
+              <Select
+                value={formData.feeType}
+                onChange={(val) => setFormData({ ...formData, feeType: val })}
               >
-                Add Fee On Top
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({ ...formData, feeDeductionType: "inclusive" })
-                }
-                className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md transition ${
-                  formData.feeDeductionType === "inclusive"
-                    ? "bg-white text-slate-900 dark:bg-slate-700 dark:text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
-                }`}
-              >
-                Deduct Fee From Total
-              </button>
+                <Select.Option value="fixed">Fixed Amount</Select.Option>
+                <Select.Option value="percentage">Percentage (%)</Select.Option>
+              </Select>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-slate-500 mb-1 font-medium">
-                  Fee Type
-                </label>
-                <Select
-                  value={formData.feeType}
-                  onChange={(val) => setFormData({ ...formData, feeType: val })}
-                >
-                  <Select.Option value="fixed">Fixed Amount</Select.Option>
-                  <Select.Option value="percentage">
-                    Percentage (%)
-                  </Select.Option>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-500 mb-1 font-medium truncate">
-                  {formData.feeType === "percentage"
-                    ? "Fee Rate (%)"
-                    : `Fee Amount (${getCurrency(sourceAcc?.currency)?.symbol || sourceAcc?.currency || "USD"})`}
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={
-                    formData.feeType === "percentage"
-                      ? formData.feeRate
-                      : formData.feeAmount
-                  }
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      [formData.feeType === "percentage"
-                        ? "feeRate"
-                        : "feeAmount"]: e.target.value,
-                    })
-                  }
-                  placeholder="0.00"
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-xs text-slate-900 dark:text-white outline-none transition min-h-10"
-                />
-              </div>
-            </div>
-
-            {/* Live Calculation Summary */}
-            <div className="rounded-lg bg-slate-100 dark:bg-slate-800/80 p-2.5 text-xs space-y-1 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
-              <div className="flex justify-between">
-                <span>Deducted from From Account:</span>
-                <span className="font-bold text-rose-600 dark:text-rose-400">
-                  {totalSourceDeducted.toFixed(2)}{" "}
-                  {getCurrency(sourceAcc?.currency)?.symbol ||
-                    sourceAcc?.currency ||
-                    "USD"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Added to To Account:</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                  {formData.destinationAmount || "0.00"}{" "}
-                  {getCurrency(destAcc?.currency)?.symbol ||
-                    destAcc?.currency ||
-                    "USD"}
-                </span>
-              </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1 font-medium truncate">
+                {formData.feeType === "percentage"
+                  ? "Fee Rate (%)"
+                  : `Fee Amount (${getCurrency(sourceAcc?.currency)?.symbol || sourceAcc?.currency || "USD"})`}
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={
+                  formData.feeType === "percentage"
+                    ? formData.feeRate
+                    : formData.feeAmount
+                }
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    [formData.feeType === "percentage"
+                      ? "feeRate"
+                      : "feeAmount"]: e.target.value,
+                  })
+                }
+                placeholder="0.00"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-xs text-slate-900 dark:text-white outline-none transition min-h-10"
+              />
             </div>
           </div>
         )}

@@ -29,8 +29,9 @@ export const TransactionCard = ({
   onDelete,
   viewOnly = false,
 }) => {
+  // const { currencies, getCurrency, isLoading } = useCurrencies();
   const isExpense = tx.type === "expense";
-  const isTransfer = tx.isTransferTransaction || tx.type === "transfer";
+  const isTransfer = tx.isTransferTransaction; //|| tx.type === "transfer";
   const isCrossCurrency = isTransfer && tx.currency !== tx.destinationCurrency;
 
   let badgeLabel = tx.type;
@@ -86,7 +87,7 @@ export const TransactionCard = ({
               amount={isExpense ? -tx.totalImpact : tx.amount}
               currency={tx.currency}
               colorize={!isTransfer}
-              className="text-sm sm:text-base font-bold text-slate-900 dark:text-white"
+              className="text-sm sm:text-base font-bold "
             />
             {isTransfer && (
               <>

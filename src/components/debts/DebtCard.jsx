@@ -60,8 +60,8 @@ export const DebtCard = ({
               Remaining
             </span>
             <MoneyDisplay
-              amount={debt.remainingBalance}
-              currency={debt.currency}
+              amount={debtObj.remainingBalance}
+              currency={debtObj.currency}
               colorize={isIOwe}
               className="text-sm sm:text-base font-bold"
             />

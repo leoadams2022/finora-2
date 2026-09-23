@@ -14,7 +14,7 @@ import { useHome } from "../hooks/useHome";
 import { useAccounts } from "../hooks/useAccounts";
 import { useCategories } from "../hooks/useCategories";
 import { usePeopleEntities } from "../hooks/usePeopleEntities";
-import { useCurrencies } from "../hooks/useCurrencies";
+// import { useCurrencies } from "../hooks/useCurrencies";
 import { debtService } from "../services/debtService";
 import { transactionService } from "../services/transactionService";
 import TransactionCard from "../components/transactions/TransactionCard";
@@ -31,13 +31,15 @@ import LoadingState from "../components/ui/LoadingState";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../hooks/useToast";
 import db from "../db/database";
+import TransactionsCardsGrid from "../components/transactions/TransactionsCardsGrid";
+import DebtEntityHorizontalScroll from "../components/debts/DebtEntityHorizontalScroll";
 
 const Home = () => {
   const { homeData, isLoading } = useHome();
   const { accounts } = useAccounts();
   const { categories, subcategories } = useCategories();
   const { peopleEntities } = usePeopleEntities();
-  const { getCurrency } = useCurrencies();
+  // const { getCurrency } = useCurrencies();
   const { showSuccess, showError } = useToast();
 
   // Modals state
@@ -270,7 +272,7 @@ const Home = () => {
       </div>
 
       {/* SECTION 2: LATEST TRANSACTIONS (VERTICAL SCROLL VIEW) */}
-      <div className="space-y-2.5 sm:space-y-3">
+      {/* <div className="space-y-2.5 sm:space-y-3">
         <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
           <Receipt className="h-4 w-4 text-emerald-600 shrink-0" />
           <span>Latest Transactions</span>
@@ -305,10 +307,35 @@ const Home = () => {
             })
           )}
         </div>
+      </div> */}
+      <div className="space-y-2.5 sm:space-y-3">
+        <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <Receipt className="h-4 w-4 text-emerald-600 shrink-0" />
+          <span>Latest Transactions</span>
+        </h2>
+
+        <div className="max-h-[70vh] overflow-y-auto  rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 p-2 sm:p-3">
+          <TransactionsCardsGrid transactions={latestTransactions} />
+        </div>
       </div>
 
       {/* SECTION 3: ACTIVE DEBTS (HORIZONTAL SCROLL) */}
       <div className="space-y-2.5 sm:space-y-3">
+        <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+          <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
+          <span>Active Debts & Liabilities</span>
+        </h2>
+
+        <DebtEntityHorizontalScroll
+          debts={activeDebts}
+          peopleEntities={peopleEntities}
+          onPay={(debt) => setDebtForPayment(debt)}
+          onView={(debt) => setSelectedDebtForView(debt)}
+          onEdit={(debt) => setDebtToEdit(debt)}
+          onDelete={(debt) => setDebtToDelete(debt)}
+        />
+      </div>
+      {/* <div className="space-y-2.5 sm:space-y-3">
         <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
           <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
           <span>Active Debts & Liabilities</span>
@@ -345,7 +372,7 @@ const Home = () => {
             })
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* SECTION 4: CATEGORIES & TAGS INSIGHTS CARD */}
       <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3.5 sm:p-5 shadow-sm space-y-3 sm:space-y-4">

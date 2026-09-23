@@ -72,6 +72,7 @@ export const TransactionCardGrid = ({
               onView={onView}
               onEdit={onEdit}
               onDelete={onDelete}
+              getCurrency={getCurrency}
               passDebtIdKey={true}
             />
           );

@@ -1,6 +1,7 @@
 ﻿// src/components/ui/MoneyDisplay.jsx
 
 import React from "react";
+import { useCurrencies } from "../../hooks/useCurrencies";
 
 const MoneyDisplay = ({
   amount = 0,
@@ -12,6 +13,7 @@ const MoneyDisplay = ({
   neutralClass = "text-slate-900 dark:text-white",
   colorize = false,
 }) => {
+  const { getCurrency } = useCurrencies();
   const numAmount = Number(amount || 0);
 
   // Validate ISO 4217 Currency Code (3 uppercase letters)
@@ -24,18 +26,41 @@ const MoneyDisplay = ({
     safeCurrency = currency.trim().toUpperCase();
   }
 
+  // Retrieve currency object from hook (priority: code -> name -> symbol)
+  const currencyObj = getCurrency(safeCurrency);
+  const symbol = currencyObj?.symbol;
+
   // eslint-disable-next-line no-useless-assignment
   let formatted = "";
   try {
-    formatted = new Intl.NumberFormat("en-US", {
-      style: showSymbol ? "currency" : "decimal",
-      currency: safeCurrency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numAmount);
-    // eslint-disable-next-line no-unused-vars
+    if (showSymbol) {
+      if (symbol) {
+        // Custom symbol formatting from the database (e.g., "$123.45", "123.45 EGP")
+        const formattedNum = new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(numAmount);
+        formatted = `${symbol} ${formattedNum}`;
+      } else {
+        // Fallback to standard Intl currency formatting
+        formatted = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: safeCurrency,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(numAmount);
+      }
+    } else {
+      // Decimal format without currency symbol
+      formatted = new Intl.NumberFormat("en-US", {
+        style: "decimal",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(numAmount);
+    }
   } catch (err) {
-    formatted = `${safeCurrency} ${numAmount.toFixed(2)}`;
+    formatted = `${symbol || safeCurrency} ${numAmount.toFixed(2)}`;
+    console.error(err);
   }
 
   let colorColorClass = neutralClass;

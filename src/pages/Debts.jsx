@@ -1,6 +1,14 @@
 ﻿// src/pages/Debts.jsx
+
 import React, { useState } from "react";
-import { Plus, Receipt, Filter, LayoutList, Maximize2 } from "lucide-react";
+import {
+  Plus,
+  Receipt,
+  Filter,
+  LayoutList,
+  Maximize2,
+  Users,
+} from "lucide-react";
 import { useDebts } from "../hooks/useDebts";
 import { usePeopleEntities } from "../hooks/usePeopleEntities";
 import { useAccounts } from "../hooks/useAccounts";
@@ -11,6 +19,7 @@ import DebtDetailsModal from "../components/debts/DebtDetailsModal";
 import DebtFilters from "../components/debts/DebtFilters";
 import DebtTable from "../components/debts/DebtTable";
 import DebtCardGrid from "../components/debts/DebtCardGrid";
+import DebtEntityGroupView from "../components/debts/DebtEntityGroupView";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
@@ -19,10 +28,7 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const Debts = () => {
   const [showFilters, setShowFilters] = useState(false);
-  const [isCompactView, setIsCompactView] = useLocalStorage(
-    "debt_isCompactView",
-    false,
-  );
+  const [viewMode, setViewMode] = useLocalStorage("debt_viewMode", "table"); // "table", "compact", "group"
 
   const [filters, setFilters] = useState({
     direction: "",
@@ -172,24 +178,45 @@ const Debts = () => {
             <span>{showFilters ? "Hide Filters" : "Filters"}</span>
           </button>
 
-          {/* Compact / Full Table View Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsCompactView((prev) => !prev)}
-            className={`flex-1 sm:flex-none flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg border px-3 py-2.5 sm:py-2 text-xs sm:text-sm font-medium transition touch-manipulation min-h-10 sm:min-h-0 ${
-              isCompactView
-                ? "bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100"
-                : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600"
-            }`}
-            title="Toggle between standard table and compact card view"
-          >
-            {isCompactView ? (
-              <Maximize2 className="h-4 w-4 shrink-0" />
-            ) : (
-              <LayoutList className="h-4 w-4 shrink-0" />
-            )}
-            <span>{isCompactView ? "Full Table" : "Compact View"}</span>
-          </button>
+          {/* View Mode Switcher */}
+          <div className="flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-800">
+            <button
+              type="button"
+              onClick={() => setViewMode("table")}
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition ${
+                viewMode === "table"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+              title="Full Table View"
+            >
+              <LayoutList className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("compact")}
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition ${
+                viewMode === "compact"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+              title="Compact Card View"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("group")}
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition ${
+                viewMode === "group"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+              title="Group by Person / Entity"
+            >
+              <Users className="h-4 w-4" />
+            </button>
+          </div>
 
           <button
             type="button"
@@ -228,7 +255,16 @@ const Debts = () => {
             setIsDebtModalOpen(true);
           }}
         />
-      ) : isCompactView ? (
+      ) : viewMode === "group" ? (
+        <DebtEntityGroupView
+          debts={debts}
+          peopleEntities={peopleEntities}
+          onPay={setDebtForPayment}
+          onView={setDebtToView}
+          onEdit={handleOpenEditModal}
+          onDelete={setDebtToDelete}
+        />
+      ) : viewMode === "compact" ? (
         <DebtCardGrid
           debts={debts}
           peopleEntities={peopleEntities}
