@@ -56,6 +56,9 @@ export const accountService = {
     const now = new Date().toISOString();
     const accountId = `acc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
+    // Get current account count to append new item to the end
+    const totalExistingItems = await db.accounts.count();
+
     const newAccount = {
       id: accountId,
       name: data.name.trim(),
@@ -80,6 +83,7 @@ export const accountService = {
         minimumPayment: Number(data.minimumPayment || 0),
         interestRate: Number(data.interestRate || 0),
       }),
+      sortOrder: totalExistingItems,
     };
 
     await db.accounts.add(newAccount);
@@ -135,6 +139,33 @@ export const accountService = {
     await db.accounts.update(id, {
       isActive: !archiveState,
       updatedAt: new Date().toISOString(),
+    });
+  },
+
+  /**
+   * Reorder accounts atomically by updating their sortOrder indices.
+   * @param {string[]} orderedIds - Array of account IDs in their new visual order.
+   */
+  async reorderAccounts(orderedIds) {
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) return;
+
+    const now = new Date().toISOString();
+
+    return await db.transaction("rw", [db.accounts, db.auditLogs], async () => {
+      for (let index = 0; index < orderedIds.length; index++) {
+        await db.accounts.update(orderedIds[index], {
+          sortOrder: index,
+          updatedAt: now,
+        });
+      }
+
+      await db.auditLogs.add({
+        id: `log_${Date.now()}`,
+        entityType: "account",
+        action: "REORDER",
+        details: `Reordered ${orderedIds.length} accounts`,
+        timestamp: now,
+      });
     });
   },
 };

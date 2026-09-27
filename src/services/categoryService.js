@@ -58,6 +58,10 @@ export const categoryService = {
     }
 
     const id = `cat_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+    // Get current categories count to append new item to the end
+    const totalExistingItems = await db.categories.count();
+
     const category = {
       id,
       name: data.name.trim(),
@@ -66,6 +70,7 @@ export const categoryService = {
       color: data.color || "#3b82f6",
       isActive: true,
       createdAt: new Date().toISOString(),
+      sortOrder: totalExistingItems,
     };
 
     await db.categories.add(category);
@@ -130,12 +135,19 @@ export const categoryService = {
     }
 
     const id = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+    const subcategoryCount = await db.subcategories
+      .where("categoryId")
+      .equals(data.categoryId)
+      .count();
+
     const subcategory = {
       id,
       categoryId: data.categoryId,
       name: data.name.trim(),
       isActive: true,
       createdAt: new Date().toISOString(),
+      sortOrder: subcategoryCount,
     };
 
     await db.subcategories.add(subcategory);
@@ -177,5 +189,71 @@ export const categoryService = {
       isActive: !archiveState,
       updatedAt: new Date().toISOString(),
     });
+  },
+
+  /**
+   * Reorder top-level categories atomically.
+   * @param {string[]} orderedIds - Array of category IDs in new order.
+   */
+  async reorderCategories(orderedIds) {
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) return;
+
+    const now = new Date().toISOString();
+
+    return await db.transaction(
+      "rw",
+      [db.categories, db.auditLogs],
+      async () => {
+        for (let index = 0; index < orderedIds.length; index++) {
+          await db.categories.update(orderedIds[index], {
+            sortOrder: index,
+            updatedAt: now,
+          });
+        }
+
+        await db.auditLogs.add({
+          id: `log_${Date.now()}`,
+          entityType: "category",
+          action: "REORDER",
+          details: `Reordered ${orderedIds.length} categories`,
+          timestamp: now,
+        });
+      },
+    );
+  },
+
+  /**
+   * Reorder subcategories within a parent category container.
+   * @param {string[]} orderedSubcategoryIds - Array of subcategory IDs in new order.
+   */
+  async reorderSubcategories(orderedSubcategoryIds) {
+    if (
+      !Array.isArray(orderedSubcategoryIds) ||
+      orderedSubcategoryIds.length === 0
+    )
+      return;
+
+    const now = new Date().toISOString();
+
+    return await db.transaction(
+      "rw",
+      [db.subcategories, db.auditLogs],
+      async () => {
+        for (let index = 0; index < orderedSubcategoryIds.length; index++) {
+          await db.subcategories.update(orderedSubcategoryIds[index], {
+            sortOrder: index,
+            updatedAt: now,
+          });
+        }
+
+        await db.auditLogs.add({
+          id: `log_${Date.now()}`,
+          entityType: "subcategory",
+          action: "REORDER",
+          details: `Reordered ${orderedSubcategoryIds.length} subcategories`,
+          timestamp: now,
+        });
+      },
+    );
   },
 };

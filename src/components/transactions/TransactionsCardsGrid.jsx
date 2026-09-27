@@ -81,7 +81,7 @@ const TransactionsCardsGrid = ({ transactions = [] }) => {
   const handleViewDetails = async (tx) => {
     if (tx.isTransferTransaction) {
       setTransferToView(tx);
-    } else if (tx.isDebtTransaction) {
+    } else if (tx.isDebtTransaction || tx.type === "debt_payment") {
       const fullDebt =
         debts.find((d) => d.id === tx.debtId) ||
         (await db.debts.get(tx.debtId));
@@ -94,7 +94,7 @@ const TransactionsCardsGrid = ({ transactions = [] }) => {
   const handleOpenEdit = async (tx) => {
     if (tx.isTransferTransaction) {
       setTransferToEdit(tx);
-    } else if (tx.isDebtTransaction) {
+    } else if (tx.isDebtTransaction || tx.type === "debt_payment") {
       const fullDebt =
         debts.find((d) => d.id === tx.debtId) ||
         (await db.debts.get(tx.debtId));
@@ -213,7 +213,7 @@ const TransactionsCardsGrid = ({ transactions = [] }) => {
 
               return (
                 <DebtCard
-                  key={fullDebt.id || tx.id}
+                  key={tx.id}
                   debt={fullDebt}
                   person={person}
                   onPay={() => setDebtForPayment(fullDebt)}

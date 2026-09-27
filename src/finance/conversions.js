@@ -37,7 +37,8 @@ export const getTriangulatedExchangeRate = async (fromCurrency, toCurrency) => {
 
   if (rateFromUSD <= 0) return 1.0;
 
-  return rateToUSD / rateFromUSD;
+  // return rateToUSD / rateFromUSD;
+  return money.divide(rateToUSD, rateFromUSD);
 };
 
 /**

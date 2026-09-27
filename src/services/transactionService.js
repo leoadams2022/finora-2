@@ -2,6 +2,7 @@
 
 import db from "../db/database";
 import { money } from "../finance/money";
+import { validateSufficientFunds } from "../utils/validation";
 import { attachmentService } from "./attachmentService";
 
 export const transactionService = {
@@ -64,6 +65,14 @@ export const transactionService = {
     }
 
     const totalAccountImpact = money.add(numAmount, feeAmount);
+
+    // validate sufficient funds:
+    if (data.type === "expense") {
+      await validateSufficientFunds({
+        accountId: data.accountId,
+        outgoingAmount: totalAccountImpact,
+      });
+    }
 
     const newTransaction = {
       id: transactionId,
@@ -187,6 +196,15 @@ export const transactionService = {
 
     const totalAccountImpact = money.add(numAmount, feeAmount);
 
+    // Inside updateTransaction:
+    if (data.type === "expense") {
+      await validateSufficientFunds({
+        accountId: data.accountId,
+        outgoingAmount: totalAccountImpact,
+        excludeTransactionId: id,
+      });
+    }
+
     const updatedTransaction = {
       ...existing,
       type: data.type,
@@ -287,7 +305,14 @@ export const transactionService = {
 
     return await db.transaction(
       "rw",
-      [db.transactions, db.transactionLines, db.attachments, db.auditLogs],
+      [
+        db.transactions,
+        db.transactionLines,
+        db.attachments,
+        db.auditLogs,
+        db.debts,
+        db.debtPayments,
+      ],
       async () => {
         await db.transactions.update(id, { isDeleted: true, updatedAt: now });
 
@@ -298,6 +323,20 @@ export const transactionService = {
         for (const line of lines) {
           await db.transactionLines.update(line.id, { isDeleted: true });
         }
+
+        // Handle debt payments (if applicable)
+        // if (existing.type === "debt_payment") {
+        const payments = await db.debtPayments
+          .where("transactionId")
+          .equals(id)
+          .toArray();
+        for (const payment of payments) {
+          await db.debtPayments.update(payment.id, {
+            isDeleted: true,
+            updatedAt: now,
+          });
+        }
+        // }
 
         const attachments = await db.attachments
           .where("transactionId")

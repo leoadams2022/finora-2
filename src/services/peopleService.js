@@ -46,6 +46,8 @@ export const peopleService = {
 
     const id = `pe_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
+    // Get current account count to append new item to the end
+    const totalExistingItems = await db.peopleEntities.count();
 
     const person = {
       id,
@@ -57,6 +59,7 @@ export const peopleService = {
       tags: data.tags || [],
       createdAt: now,
       updatedAt: now,
+      sortOrder: totalExistingItems,
     };
 
     await db.peopleEntities.add(person);
@@ -140,6 +143,37 @@ export const peopleService = {
           entityId: id,
           action: "DELETE",
           details: `Deleted person/entity record: ${existing.name}`,
+          timestamp: now,
+        });
+      },
+    );
+  },
+
+  /**
+   * Reorder people/entities atomically.
+   * @param {string[]} orderedIds - Array of person/entity IDs in new order.
+   */
+  async reorder(orderedIds) {
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) return;
+
+    const now = new Date().toISOString();
+
+    return await db.transaction(
+      "rw",
+      [db.peopleEntities, db.auditLogs],
+      async () => {
+        for (let index = 0; index < orderedIds.length; index++) {
+          await db.peopleEntities.update(orderedIds[index], {
+            sortOrder: index,
+            updatedAt: now,
+          });
+        }
+
+        await db.auditLogs.add({
+          id: `log_${Date.now()}`,
+          entityType: "personEntity",
+          action: "REORDER",
+          details: `Reordered ${orderedIds.length} people/entities`,
           timestamp: now,
         });
       },

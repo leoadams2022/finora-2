@@ -15,6 +15,9 @@ export const useAccounts = (includeArchived = false) => {
           .toArray();
       }
 
+      // Sort by sortOrder
+      accountList.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
       // Read transactionLines count/keys to establish a live query dependency
       await db.transactionLines.count();
 

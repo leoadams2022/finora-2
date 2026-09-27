@@ -1,7 +1,16 @@
 ﻿// src/pages/PeopleEntities.jsx
 
 import React, { useState } from "react";
-import { Users, Plus, Edit2, Trash2, Check, X } from "lucide-react";
+import {
+  Users,
+  Plus,
+  Edit2,
+  Trash2,
+  Check,
+  X,
+  ArrowUpDownIcon,
+  ArrowUpDown,
+} from "lucide-react";
 import { usePeopleEntities } from "../hooks/usePeopleEntities";
 import { peopleService } from "../services/peopleService";
 import LoadingState from "../components/ui/LoadingState";
@@ -9,6 +18,7 @@ import EmptyState from "../components/ui/EmptyState";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import Select from "../components/ui/Select";
 import { useToast } from "../hooks/useToast";
+import PersonEntityOrderModal from "../components/people/PersonEntityOrderModal";
 
 const PeopleEntities = () => {
   // New Entity Form State
@@ -22,6 +32,8 @@ const PeopleEntities = () => {
 
   // Delete Confirmation Modal State
   const [entityToDelete, setEntityToDelete] = useState(null);
+
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   const { peopleEntities, isLoading } = usePeopleEntities();
   const { showSuccess, showError } = useToast();
@@ -75,14 +87,28 @@ const PeopleEntities = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          People & Entities
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-          Manage individuals, companies, and organizations associated with debts
-          and transactions.
-        </p>
+      {/* Header Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+            People & Entities
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            Manage individuals, companies, and organizations associated with
+            debts and transactions.
+          </p>
+        </div>
+
+        {peopleEntities.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setIsOrderModalOpen(true)}
+            className="w-full sm:w-auto flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 transition touch-manipulation min-h-10 sm:min-h-0 shrink-0"
+          >
+            <ArrowUpDown className="h-4 w-4 shrink-0" />
+            <span>Reorder</span>
+          </button>
+        )}
       </div>
 
       {/* Creation Form */}
@@ -240,6 +266,13 @@ const PeopleEntities = () => {
         message={`Are you sure you want to delete "${entityToDelete?.name}"?`}
         confirmText="Delete"
         variant="danger"
+      />
+
+      {/* Reorder Modal */}
+      <PersonEntityOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        peopleEntities={peopleEntities}
       />
     </div>
   );

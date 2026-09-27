@@ -1,11 +1,16 @@
 # TODO:
 
-- [ ] we need to add a unversal date filter for the transaction and transfers to show them by month
-- [ ] we an Debt Payment is Received we need to show the related debt to it on the card and the deatils modal
-- [ ] we need to be able to reorder accounts Categories Subcategories Currencies and People/Entities
+- [ ] At the moment the account balance is being calculated when needed as follow (Opening Balance + Income/Refunds - Expenses/Fees) by going over all the lines that are for that account on the "transactionLines" store, which would take a long time when the data is too big
+
 - [ ] we need to NOT count transfers as income on the home page (Income This Month)
 - [ ] we need to NOT count the Loaned Out amounts as expencs on the home page
 - [ ] we need to add a section to home page to show expences/income by Categories & Subcategories and another section by tags as will
+
+- [ ] we need to add a unversal date filter for the transaction and transfers to show them by month
+
+- [ ] we need to create a text input component with autocomplet it will take in the options of the history of expansces or debts based on what is being added
+
+- [ ] we need to add a List of things to buy PAGE
 
 # DONE:
 
@@ -33,3 +38,10 @@
 - [x] we need to fix the latest transaction view on the home page to use the transfer and debt cards components not just the transaction card component
 - [x] we need to groub debts by person or entity
 - [x] we need to support adding transfers fees as subof the the ttl amount not just added on top on it
+- [x] when adding a transfer form EGP to USD the Exchange Rate math is not right we need to show the Exchange Rate usd => egp
+      1$ = 51.8 E£ ====> 200$ = 10360 E£ but 1$ = 0.0193 E£ ====> 10360 E£ = 199.95 $ !!!
+- [x] we an Debt Payment is Received we need to show the related debt to it on the card and the deatils modal
+- [x] if the user delete a debt payment the debt will show the Remaining is 0 (or whatever is left) and Total Paid wont change but the amount will be dedcted form the account the payment was made to (same for both "I Owe" and "They Owe" debts)
+- [x] at the moment if we delete a debt after it was paied the debt payment transaction is being deleted but the amount on the effected account is not chageing and i dont knwo if it should on not
+- [x] at the moment we can spend money we dont have in the account and it can have a - value
+- [x] we need to be able to reorder accounts categories Subcategories Currencies People/Entities and tags

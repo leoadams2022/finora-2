@@ -1,18 +1,28 @@
 // src/pages/Currencies.jsx
 
 import React, { useState } from "react";
-import { Plus, Coins, Trash2, Edit2, ArrowRightLeft, Star } from "lucide-react";
+import {
+  Plus,
+  Coins,
+  Trash2,
+  Edit2,
+  ArrowRightLeft,
+  Star,
+  ArrowUpDown,
+} from "lucide-react";
 import { useCurrencies } from "../hooks/useCurrencies";
 import { currencyService } from "../services/currencyService";
 import { useToast } from "../hooks/useToast";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import LoadingState from "../components/ui/LoadingState";
+import CurrencyOrderModal from "../components/currencies/CurrencyOrderModal";
 
 export const Currencies = () => {
   const { currencies, isLoading } = useCurrencies();
   const { showSuccess, showError } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [currencyToEdit, setCurrencyToEdit] = useState(null);
   const [currencyToDelete, setCurrencyToDelete] = useState(null);
 
@@ -38,6 +48,7 @@ export const Currencies = () => {
         rateToUSD: curr.rateToUSD.toString(),
         isDefault: Boolean(curr.isDefault),
         isEditing: true,
+        sortOrder: curr.sortOrder,
       });
     } else {
       setCurrencyToEdit(null);
@@ -101,14 +112,27 @@ export const Currencies = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => handleOpenModal()}
-          className="w-full sm:w-auto flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg bg-emerald-600 px-3.5 sm:px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700 transition touch-manipulation min-h-10 sm:min-h-0 shrink-0"
-        >
-          <Plus className="h-4 w-4 shrink-0" />
-          <span>Add Currency</span>
-        </button>
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
+          {currencies.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsOrderModalOpen(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 transition touch-manipulation min-h-10 sm:min-h-0 shrink-0"
+            >
+              <ArrowUpDown className="h-4 w-4 shrink-0" />
+              <span>Reorder</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => handleOpenModal()}
+            className="w-full sm:w-auto flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg bg-emerald-600 px-3.5 sm:px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700 transition touch-manipulation min-h-10 sm:min-h-0 shrink-0"
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            <span>Add Currency</span>
+          </button>
+        </div>
       </div>
 
       {/* Currency Cards Grid */}
@@ -337,6 +361,13 @@ export const Currencies = () => {
         message={`Are you sure you want to delete ${currencyToDelete?.code}?`}
         confirmText="Delete"
         variant="danger"
+      />
+
+      {/* Currency Order Modal */}
+      <CurrencyOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        currencies={currencies}
       />
     </div>
   );

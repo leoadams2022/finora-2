@@ -115,6 +115,7 @@ export const useTransactions = (
     [],
   );
 
+  console.log({ transactionsData });
   return {
     transactions: transactionsData || [],
     isLoading: transactionsData === undefined,

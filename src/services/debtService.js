@@ -3,6 +3,7 @@ import db from "../db/database";
 import { money } from "../finance/money";
 import { calculateDebtBalance } from "../finance/debts";
 import { attachmentService } from "./attachmentService";
+import { validateSufficientFunds } from "../utils/validation";
 
 export const debtService = {
   async getDebts(filters = {}) {
@@ -42,6 +43,14 @@ export const debtService = {
     const now = new Date().toISOString();
     const debtId = `debt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const numDebtAmount = Number(data.originalAmount);
+
+    // If I'm lending money the account need to have enough funds
+    if (data.direction === "they_owe") {
+      await validateSufficientFunds({
+        accountId: data.accountId,
+        outgoingAmount: numDebtAmount,
+      });
+    }
 
     // Prepare base64 attachment records in memory BEFORE Dexie transaction
     const attachmentRecords = await attachmentService.prepareAttachmentRecords(
@@ -242,6 +251,14 @@ export const debtService = {
         const isIOwe = debt.direction === "i_owe";
         const lineType = isIOwe ? "expense" : "income";
 
+        // Check sufficient funds when paying down a debt I owe
+        if (debt.direction === "i_owe") {
+          await validateSufficientFunds({
+            accountId: acc.id,
+            outgoingAmount: accountAmount,
+          });
+        }
+
         const txHeader = {
           id: txId,
           type: "debt_payment",
@@ -253,6 +270,9 @@ export const debtService = {
           status: "completed",
           isDeleted: false,
           createdAt: now,
+          // isDebtTransaction: true,
+          debtId: debt.id,
+          // paymentId: paymentId ,
         };
 
         const txl = {
@@ -306,6 +326,14 @@ export const debtService = {
 
     const now = new Date().toISOString();
     const numDebtAmount = Number(data.originalAmount);
+
+    // If I'm lending money the account need to have enough funds
+    if (data.direction === "they_owe") {
+      await validateSufficientFunds({
+        accountId: data.accountId,
+        outgoingAmount: numDebtAmount,
+      });
+    }
 
     const newAttachmentRecords =
       await attachmentService.prepareAttachmentRecords(id, newRawFiles);

@@ -3,22 +3,33 @@ import db from "../db/database";
 
 export const useCategories = (includeInactive = false) => {
   const categories = useLiveQuery(
-    () => {
+    async () => {
+      let list;
       if (includeInactive) {
-        return db.categories.toArray();
+        list = await db.categories.toArray();
+      } else {
+        list = await db.categories
+          .filter((c) => c.isActive !== false)
+          .toArray();
       }
-      return db.categories.filter((c) => c.isActive !== false).toArray();
+
+      return list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     },
     [includeInactive],
     [],
   );
 
   const subcategories = useLiveQuery(
-    () => {
+    async () => {
+      let list;
       if (includeInactive) {
-        return db.subcategories.toArray();
+        list = await db.subcategories.toArray();
+      } else {
+        list = await db.subcategories
+          .filter((s) => s.isActive !== false)
+          .toArray();
       }
-      return db.subcategories.filter((s) => s.isActive !== false).toArray();
+      return list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     },
     [includeInactive],
     [],

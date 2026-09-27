@@ -82,6 +82,12 @@ export const currencyService = {
     const now = new Date().toISOString();
     const isDefault = Boolean(data.isDefault);
 
+    // Get current currencies count to append new item to the end
+    const totalExistingItems =
+      data?.sortOrder || data?.sortOrder === 0
+        ? data.sortOrder
+        : await db.currencies.count();
+
     return await db.transaction(
       "rw",
       [db.currencies, db.auditLogs],
@@ -106,6 +112,7 @@ export const currencyService = {
           isBase: Boolean(data.isBase),
           isDefault,
           updatedAt: now,
+          sortOrder: totalExistingItems,
         };
 
         if (isEditing) {
@@ -156,6 +163,37 @@ export const currencyService = {
           action: "DELETE",
           details: `Deleted currency ${code}`,
           timestamp: new Date().toISOString(),
+        });
+      },
+    );
+  },
+
+  /**
+   * Reorder currencies atomically.
+   * @param {string[]} orderedCodes - Array of currency codes (e.g. ['USD', 'EUR', 'EGP']) in new order.
+   */
+  async reorderCurrencies(orderedCodes) {
+    if (!Array.isArray(orderedCodes) || orderedCodes.length === 0) return;
+
+    const now = new Date().toISOString();
+
+    return await db.transaction(
+      "rw",
+      [db.currencies, db.auditLogs],
+      async () => {
+        for (let index = 0; index < orderedCodes.length; index++) {
+          await db.currencies.update(orderedCodes[index], {
+            sortOrder: index,
+            updatedAt: now,
+          });
+        }
+
+        await db.auditLogs.add({
+          id: `log_${Date.now()}`,
+          entityType: "currency",
+          action: "REORDER",
+          details: `Reordered ${orderedCodes.length} currencies`,
+          timestamp: now,
         });
       },
     );

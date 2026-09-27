@@ -1,6 +1,7 @@
 ﻿// src/services/transferService.js
 import db from "../db/database";
 import { money } from "../finance/money";
+import { validateSufficientFunds } from "../utils/validation";
 import { attachmentService } from "./attachmentService";
 
 export const transferService = {
@@ -90,6 +91,16 @@ export const transferService = {
         ? Number(data.destinationAmount)
         : money.multiply(netSourceTransferAmount, exchangeRate);
     }
+
+    const totalSourceDebit =
+      data.hasFee && data.feeDeductionType === "additive"
+        ? money.add(rawSourceAmount, feeAmount)
+        : rawSourceAmount;
+
+    await validateSufficientFunds({
+      accountId: sourceAcc.id,
+      outgoingAmount: totalSourceDebit,
+    });
 
     const transferId = `trf_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
@@ -257,6 +268,17 @@ export const transferService = {
         ? Number(data.destinationAmount)
         : money.multiply(netSourceTransferAmount, exchangeRate);
     }
+
+    const totalSourceDebit =
+      data.hasFee && data.feeDeductionType === "additive"
+        ? money.add(rawSourceAmount, feeAmount)
+        : rawSourceAmount;
+
+    await validateSufficientFunds({
+      accountId: sourceAcc.id,
+      outgoingAmount: totalSourceDebit,
+      excludeTransactionId: id,
+    });
 
     const newAttachmentRecords =
       await attachmentService.prepareAttachmentRecords(id, newRawFiles);

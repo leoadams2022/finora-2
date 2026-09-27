@@ -9,20 +9,21 @@
 
 export const SCHEMAS = {
   v1: {
-    accounts: "id, name, type, currency, isActive, createdAt",
-    currencies: "code, symbol, name, isDefault, isBase",
+    accounts:
+      "id, name, type, currency, currentBalance, isActive, createdAt, sortOrder",
+    currencies: "code, symbol, name, isDefault, isBase, sortOrder",
     transactions:
       "id, type, date, accountId, categoryId, subcategoryId, personEntityId, status, isDeleted, createdAt",
     transactionLines:
       "id, transactionId, accountId, categoryId, type, currency, isDeleted",
-    categories: "id, name, type, isActive",
-    subcategories: "id, categoryId, name, isActive",
-    tags: "id, name",
+    categories: "id, name, type, isActive, sortOrder",
+    subcategories: "id, categoryId, name, isActive, sortOrder",
+    tags: "id, name, sortOrder",
     recurringTransactions:
       "id, name, transactionType, frequency, status, nextOccurrence",
     budgets:
       "id, name, period, categoryId, subcategoryId, tagId, startDate, endDate",
-    peopleEntities: "id, name, type, createdAt",
+    peopleEntities: "id, name, type, createdAt, sortOrder",
     attachments: "id, transactionId, fileName, createdAt",
     auditLogs: "id, entityType, entityId, timestamp",
     netWorthSnapshots: "id, date",

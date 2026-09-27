@@ -1,5 +1,13 @@
 ﻿import React, { useState } from "react";
-import { Plus, Wallet, Eye, EyeOff } from "lucide-react";
+import {
+  Plus,
+  Wallet,
+  Eye,
+  EyeOff,
+  GripVertical,
+  GripHorizontal,
+  ArrowUpDown,
+} from "lucide-react";
 import { useAccounts } from "../hooks/useAccounts";
 import { accountService } from "../services/accountService";
 import AccountCard from "../components/accounts/AccountCard";
@@ -7,11 +15,14 @@ import AccountModal from "../components/accounts/AccountModal";
 import EmptyState from "../components/ui/EmptyState";
 import LoadingState from "../components/ui/LoadingState";
 import { useToast } from "../hooks/useToast";
+import SortableList from "../components/ui/SortableList";
+import AccountOrderModal from "../components/accounts/AccountOrderModal";
 
 const Accounts = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [accountToEdit, setAccountToEdit] = useState(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   const { accounts, isLoading } = useAccounts(showArchived);
   const { showSuccess, showError } = useToast();
@@ -75,6 +86,15 @@ const Accounts = () => {
         <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
           <button
             type="button"
+            onClick={() => setIsOrderModalOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 transition touch-manipulation min-h-10 sm:min-h-0"
+          >
+            <ArrowUpDown className="h-4 w-4 shrink-0" />
+            <span className="truncate">Reorder</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setShowArchived((prev) => !prev)}
             className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 transition touch-manipulation min-h-10 sm:min-h-0"
           >
@@ -131,6 +151,13 @@ const Accounts = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveAccount}
         accountToEdit={accountToEdit}
+      />
+
+      {/* Account Order Modal */}
+      <AccountOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        accounts={accounts}
       />
     </div>
   );

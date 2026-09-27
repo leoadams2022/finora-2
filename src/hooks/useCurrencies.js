@@ -6,7 +6,8 @@ import db from "../db/database";
 export const useCurrencies = () => {
   const currenciesData = useLiveQuery(
     async () => {
-      return await db.currencies.toArray();
+      const list = await db.currencies.toArray();
+      return list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     },
     [],
     [],

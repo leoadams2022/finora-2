@@ -9,6 +9,7 @@ import { useAccounts } from "../../hooks/useAccounts";
 import { useCurrencies } from "../../hooks/useCurrencies";
 import Select from "../ui/Select";
 import { getTriangulatedExchangeRate } from "../../finance/conversions";
+import { money } from "../../finance/money";
 
 const DEFAULT_FORM = {
   sourceAccountId: "",
@@ -97,7 +98,8 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
   let calculatedFee = 0;
   if (formData.hasFee) {
     if (formData.feeType === "percentage") {
-      calculatedFee = (rawSourceNum * Number(formData.feeRate || 0)) / 100;
+      calculatedFee =
+        money.multiply(rawSourceNum * Number(formData.feeRate || 0)) / 100;
     } else {
       calculatedFee = Number(formData.feeAmount || 0);
     }
@@ -143,7 +145,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
 
         if (!isMounted) return;
 
-        const rateStr = rate ? String(Number(rate.toFixed(4))) : "1.0";
+        const rateStr = rate ? String(Number(rate)) : "1.0";
 
         setFormData((prev) => {
           const numRate = Number(rateStr);
@@ -151,7 +153,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
             ...prev,
             exchangeRate: rateStr,
             destinationAmount: netSourceTransferAmount
-              ? (netSourceTransferAmount * numRate).toFixed(2)
+              ? money.multiply(netSourceTransferAmount, numRate)
               : "",
           };
         });
@@ -184,7 +186,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
         // eslint-disable-next-line no-useless-assignment
         let fee = 0;
         if (prev.feeType === "percentage") {
-          fee = (numVal * Number(prev.feeRate || 0)) / 100;
+          fee = money.multiply(numVal * Number(prev.feeRate || 0)) / 100;
         } else {
           fee = Number(prev.feeAmount || 0);
         }
@@ -192,7 +194,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
       }
 
       const calculatedDest = isCrossCurrency
-        ? (effectiveNet * rate).toFixed(2)
+        ? money.multiply(effectiveNet, rate)
         : String(effectiveNet);
 
       return {
@@ -209,7 +211,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
       return {
         ...prev,
         exchangeRate: val,
-        destinationAmount: (netSourceTransferAmount * numRate).toFixed(2),
+        destinationAmount: money.multiply(netSourceTransferAmount * numRate),
       };
     });
   };
@@ -503,7 +505,7 @@ export const TransferForm = ({ onSave, onClose, transferToEdit = null }) => {
               <div className="flex justify-between">
                 <span>Deducted from From Account:</span>
                 <span className="font-bold text-rose-600 dark:text-rose-400">
-                  {totalSourceDeducted.toFixed(2)}{" "}
+                  {totalSourceDeducted.toFixed(4)}{" "}
                   {getCurrency(sourceAcc?.currency)?.symbol ||
                     sourceAcc?.currency ||
                     "USD"}

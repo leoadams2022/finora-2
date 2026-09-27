@@ -9,6 +9,8 @@ import {
   ArchiveRestore,
   Eye,
   EyeOff,
+  GripHorizontal,
+  ArrowUpDown,
 } from "lucide-react";
 import { useCategories } from "../hooks/useCategories";
 import { categoryService } from "../services/categoryService";
@@ -17,6 +19,8 @@ import SubcategoryModal from "../components/categories/SubcategoryModal";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import { useToast } from "../hooks/useToast";
+import SortableList from "../components/ui/SortableList";
+import CategoryOrderModal from "../components/categories/CategoryOrderModal";
 
 const Categories = () => {
   const [showArchived, setShowArchived] = useState(false);
@@ -32,6 +36,8 @@ const Categories = () => {
 
   const { categories, subcategories, isLoading } = useCategories(showArchived);
   const { showSuccess, showError } = useToast();
+
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   // Category Handlers
   const handleOpenAddCategory = () => {
@@ -115,6 +121,24 @@ const Categories = () => {
     }
   };
 
+  // const handleReorderCategories = async (orderedIds) => {
+  //   try {
+  //     await categoryService.reorderCategories(orderedIds);
+  //     showSuccess("Categories reordered.");
+  //   } catch (err) {
+  //     showError(err.message || "Failed to reorder categories.");
+  //   }
+  // };
+
+  // const handleReorderSubcategories = async (orderedSubcategoryIds) => {
+  //   try {
+  //     await categoryService.reorderSubcategories(orderedSubcategoryIds);
+  //     showSuccess("Subcategories reordered.");
+  //   } catch (err) {
+  //     showError(err.message || "Failed to reorder subcategories.");
+  //   }
+  // };
+
   if (isLoading) return <LoadingState message="Loading categories..." />;
 
   return (
@@ -132,6 +156,15 @@ const Categories = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:space-x-3 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setIsOrderModalOpen(true)}
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 sm:space-x-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 transition min-h-10 touch-manipulation"
+          >
+            <ArrowUpDown className="h-4 w-4 shrink-0" />
+            <span className="truncate">Reorder</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setShowArchived((prev) => !prev)}
@@ -332,6 +365,13 @@ const Categories = () => {
         onSave={handleSaveSubcategory}
         subcategoryToEdit={subcategoryToEdit}
         parentCategory={activeParentCategory}
+      />
+
+      <CategoryOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        categories={categories}
+        subcategories={subcategories}
       />
     </div>
   );
