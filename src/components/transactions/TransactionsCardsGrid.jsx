@@ -94,7 +94,8 @@ const TransactionsCardsGrid = ({ transactions = [] }) => {
   const handleOpenEdit = async (tx) => {
     if (tx.isTransferTransaction) {
       setTransferToEdit(tx);
-    } else if (tx.isDebtTransaction || tx.type === "debt_payment") {
+    } else if (tx.isDebtTransaction) {
+      // || tx.type === "debt_payment"
       const fullDebt =
         debts.find((d) => d.id === tx.debtId) ||
         (await db.debts.get(tx.debtId));

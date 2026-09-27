@@ -2,6 +2,8 @@
 
 - [ ] At the moment the account balance is being calculated when needed as follow (Opening Balance + Income/Refunds - Expenses/Fees) by going over all the lines that are for that account on the "transactionLines" store, which would take a long time when the data is too big
 
+- [ ] we need to create a debt payment transaction card and edite modal that shows the data of the related bedt to the transaction
+
 - [ ] we need to NOT count transfers as income on the home page (Income This Month)
 - [ ] we need to NOT count the Loaned Out amounts as expencs on the home page
 - [ ] we need to add a section to home page to show expences/income by Categories & Subcategories and another section by tags as will
